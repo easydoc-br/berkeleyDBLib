@@ -71,9 +71,10 @@ public class BerkeleyDAO<T, K> {
 			}
 			K id = getId(entity, last);
 			updateEntityKey(id, entity);
+			String json = JsonUtil.toJson(entity);
 			final DatabaseEntry newKey;
 			newKey = getNewKey(entity);
-			final DatabaseEntry newData = new DatabaseEntry(JsonUtil.toJson(entity).getBytes());
+			final DatabaseEntry newData = new DatabaseEntry(json.getBytes());
 			database.put(null, newKey, newData);
 			database.sync();
 			cursor.close();
@@ -153,6 +154,42 @@ public class BerkeleyDAO<T, K> {
 		}
 	}
 	
+	public T delete(K id) 
+			throws IllegalArgumentException, IllegalAccessException, InstantiationException, IOException, DatabaseException {
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("function=delete status=init");
+		}
+		final DatabaseEntry key = new DatabaseEntry(id.toString().getBytes());
+		final DatabaseEntry data = new DatabaseEntry();
+		Cursor cursor = null;
+		try {
+			cursor = database.openCursor(null, null);
+			cursor.getSearchKey(key, data, LockMode.RMW);
+			if (data.getData() == null) {
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("function=delete msg=[No data found for id {}]", id.toString());
+				}
+				cursor.close();
+				cursor = null;
+				return null;
+			}
+			final String json = new String(data.getData(), StandardCharsets.UTF_8);
+			T item = JsonUtil.fromJson(json, clazz);
+			cursor.delete();
+			database.sync();
+			cursor.close();
+			cursor = null;
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("function=delete status=done");
+			}
+			return item;
+		} catch (Exception e) {
+			cursor.close();
+			cursor = null;
+			throw e;
+		}
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private K getId(T entity, T last) throws IllegalArgumentException, IllegalAccessException, IOException, InstantiationException {
 		if (LOGGER.isTraceEnabled()) {
@@ -181,7 +218,7 @@ public class BerkeleyDAO<T, K> {
 		return id;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes"})
 	private DatabaseEntry getNewKey(Object entity) 
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, IOException {
 		if (LOGGER.isTraceEnabled()) {
@@ -195,7 +232,8 @@ public class BerkeleyDAO<T, K> {
 					entity.getClass().getSimpleName());
 			throw new RuntimeException("Cannot generate a new Key without strategy");
 		}
-		DatabaseEntry key = clazz.newInstance().generateKey(field.get(entity));
+		byte[] bytes = field.get(entity).toString().getBytes(StandardCharsets.UTF_8);
+		DatabaseEntry key = new DatabaseEntry(bytes);
 		if (LOGGER.isTraceEnabled()) {
 			LOGGER.trace("function=getNewKey status=done");
 		}
