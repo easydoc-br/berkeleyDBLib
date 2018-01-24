@@ -199,6 +199,7 @@ public class BerkeleyDAO<T, K> {
 		K id = ReflectionsUtil.getAnnotatedFieldValue(entity, Id.class, idClazz);
 		if (id == null) {
 			Field field = ReflectionsUtil.getAnnotatedField(entity.getClass(), Id.class);
+			LOGGER.info("*************** {}", field.getName());
 			Id idAnnotation = (Id) field.getAnnotation(Id.class);
 			Class<? extends KeyStrategy> clazz = idAnnotation.strategy();
 			if (clazz == null) {
@@ -207,8 +208,11 @@ public class BerkeleyDAO<T, K> {
 				throw new RuntimeException("Cannot generate a new Key without strategy");
 			}
 			if (last != null) {
+				LOGGER.debug("function=getNewKey msg=[Updating ID with Strategy {} (Last: {})]", clazz.getSimpleName(),
+						last.toString());
 				id = (K) clazz.newInstance().generate(field.get(last));
 			} else {
+				LOGGER.debug("function=getNewKey msg=[Generating new ID with Strategy {}]", clazz.getSimpleName());
 				id = (K) clazz.newInstance().generate(null);
 			}
 		}

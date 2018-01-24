@@ -19,7 +19,6 @@ public class ReflectionsUtil {
 			throw new RuntimeException("parameter 'annotation' is not a Annotation Class");
 		}
 		for (Field field : clazz.getDeclaredFields()) {
-			LOGGER.info("{} - {}", field.getName(), clazz.getName());
 			if (field.isAnnotationPresent(annotation)) {
 				field.setAccessible(true);
 				if (LOGGER.isTraceEnabled()) {
