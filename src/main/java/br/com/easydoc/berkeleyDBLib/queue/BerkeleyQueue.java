@@ -86,8 +86,11 @@ public class BerkeleyQueue<T> {
 		final DatabaseEntry key = new DatabaseEntry();
 		final DatabaseEntry data = new DatabaseEntry();
 		Cursor cursor = queue.openCursor(null, null);
-		cursor.getFirst(key, data, LockMode.RMW);
-		if (data.getData() == null) {
+		OperationStatus status = cursor.getFirst(key, data, LockMode.RMW);
+		if (status.equals(OperationStatus.NOTFOUND) || data.getData() == null) {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("function=pull msg=[No data found]");
+			}
 			return null;
 		}
 		final String json = StringBinding.entryToString(data);

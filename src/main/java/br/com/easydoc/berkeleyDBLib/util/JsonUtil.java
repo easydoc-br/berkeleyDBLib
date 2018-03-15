@@ -15,9 +15,6 @@ public class JsonUtil {
 	private static ObjectMapper mapper;
 	
 	public static <T> T fromJson(String json, Class<T> clazz) throws IOException {
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("function=fromJson status=init");
-		}
 		T obj = null;
 		try {
 			obj = getMapper().readValue(json, clazz);
@@ -25,25 +22,16 @@ public class JsonUtil {
 			LOGGER.error("function=fromJson msg=[Erro ao Deserializar a partir do json '{}']", json, e);
 			throw e;
 		}
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("function=fromJson status=done");
-		}
 		return obj;
 	}
 
 	public static String toJson(Object obj) throws IOException {
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("function=toJson status=init");
-		}
 		String json = null;
 		try {
 			json = getMapper().writeValueAsString(obj);
 		} catch (JsonProcessingException e) {
 			LOGGER.error("function=toJson msg=[Erro ao Serializar o objeto '{}']", obj.getClass().getName(), e);
 			throw e;
-		}
-		if (LOGGER.isTraceEnabled()) {
-			LOGGER.trace("function=toJson status=done");
 		}
 		return json;
 	}

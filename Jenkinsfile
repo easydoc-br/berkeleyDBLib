@@ -10,11 +10,11 @@ pipeline {
             "files": [
                 {
                     "pattern": "target/*.jar",
-                    "target": "libs-release-local/br/com/easydoc/berkeleyDBLib/${pomVersion}-${env.BUILD_NUMBER}/"
+                    "target": "libs-release-local/br/com/easydoc/berkeleyDBLib/${pomVersion}/"
                 },
                 {
                     "pattern": "target/*.pom",
-                    "target": "libs-release-local/br/com/easydoc/berkeleyDBLib/${pomVersion}-${env.BUILD_NUMBER}/"
+                    "target": "libs-release-local/br/com/easydoc/berkeleyDBLib/${pomVersion}/"
                 }
             ]
         }"""
